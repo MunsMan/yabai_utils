@@ -51,34 +51,34 @@ impl YabaiWindowFrame {
     pub fn direction(&self, frame: &YabaiWindowFrame) -> (usize, Direction) {
         let center = self.position() - frame.position();
         if center.y == 0 {
-            if center.x < 0 {
+            if center.x > 0 {
                 (center.x.unsigned_abs(), Direction::West)
             } else {
                 (center.x.unsigned_abs(), Direction::East)
             }
         } else if center.x == 0 {
-            if center.y < 0 {
+            if center.y > 0 {
                 (center.y.unsigned_abs(), Direction::South)
             } else {
                 (center.y.unsigned_abs(), Direction::North)
             }
         } else if center.x.abs() > center.y.abs() {
-            if center.x < 0 {
-                (center.x.unsigned_abs(), Direction::West)
-            } else {
+            if center.x > 0 {
                 (center.x.unsigned_abs(), Direction::East)
+            } else {
+                (center.x.unsigned_abs(), Direction::West)
             }
-        } else if center.y < 0 {
+        } else if center.y > 0 {
             (center.y.unsigned_abs(), Direction::South)
         } else {
             (center.y.unsigned_abs(), Direction::North)
         }
     }
 
-    fn position(&self) -> Positon {
+    pub fn position(&self) -> Positon {
         Positon {
-            x: self.w as isize - self.x as isize,
-            y: self.h as isize - self.y as isize,
+            x: self.x as isize + (self.w / 2.0) as isize,
+            y: self.y as isize + (self.h / 2.0) as isize,
         }
     }
 }
@@ -89,7 +89,9 @@ pub fn query_windows() -> Vec<YabaiWindowObject> {
         .output()
         .expect("failed to execute process")
         .stdout;
-    serde_json::from_slice(&result).unwrap()
+    let mut windows: Vec<YabaiWindowObject> = serde_json::from_slice(&result).unwrap();
+    windows.retain(|x| x.is_visible && !x.is_hidden);
+    windows
 }
 
 pub fn focus_window(window_id: WindowId) {
