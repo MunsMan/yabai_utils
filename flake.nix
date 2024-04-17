@@ -17,18 +17,6 @@
         devShells.default = mkShell {
           packages = [ rust rust-analyzer-unwrapped ];
         };
-        packages.default = rustPlatform.buildRustPackage {
-          pname = "yabai-utils";
-          version = "1.0.0";
-          src = ./.;
-
-          unpackPhase = "true";
-
-          cargoSha256 = "sha256-TPMXEJtrepZyA4efUQYa6i0SWglgSNEckOo34QOoOCU=";
-
-          buildInputs = [ ];
-
-        };
       });
 }
 
