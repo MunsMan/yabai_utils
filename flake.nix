@@ -20,18 +20,16 @@
         devShells.default = mkShell {
           packages = [ rust rust-analyzer-unwrapped ] ++ darwinInputs;
         };
-        packages.default = {
-            yabai-utils = rustPlatform.buildRustPackage {
+        packages.yabai-utils = rustPlatform.buildRustPackage {
                 pname = "yabai-utils";
                 version = "1.0.0";
                 src = ./.;
 
-                cargoSha256 = lib.fakeSha256;
+                cargoSha256 = "sha256-TPMXEJtrepZyA4efUQYa6i0SWglgSNEckOo34QOoOCU=";
 
                 buildInputs = [];
 
                 };
-            };
       });
 }
 
