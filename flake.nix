@@ -22,6 +22,8 @@
           version = "1.0.0";
           src = ./.;
 
+          unpackPhase = "true";
+
           cargoSha256 = "sha256-TPMXEJtrepZyA4efUQYa6i0SWglgSNEckOo34QOoOCU=";
 
           buildInputs = [ ];
