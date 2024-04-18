@@ -29,6 +29,12 @@ impl Sub<Positon> for Positon {
     }
 }
 
+impl Positon {
+    pub fn abs(&self) -> usize {
+        (self.x.pow(2) + self.y.pow(2)) as usize
+    }
+}
+
 pub struct WindowNeighbours {
     pub north: Option<WindowId>,
     pub west: Option<WindowId>,
@@ -68,33 +74,37 @@ pub fn order_windows(windows: &[YabaiWindowObject]) -> HashMap<WindowId, WindowN
             if window.id == other_windows.id {
                 continue;
             }
-            let (score, direction) = window.frame.direction(&other_windows.frame);
-            match direction {
-                Direction::North => {
-                    if best_north > score {
-                        best_north = score;
-                        win.north = Some(other_windows.id)
+            let directions = window.frame.direction(&other_windows.frame);
+            directions.into_iter().for_each(|direction| {
+                if let Some((score, direction)) = direction {
+                    match direction {
+                        Direction::North => {
+                            if best_north > score {
+                                best_north = score;
+                                win.north = Some(other_windows.id)
+                            }
+                        }
+                        Direction::West => {
+                            if best_west > score {
+                                best_west = score;
+                                win.west = Some(other_windows.id)
+                            }
+                        }
+                        Direction::South => {
+                            if best_south > score {
+                                best_south = score;
+                                win.south = Some(other_windows.id)
+                            }
+                        }
+                        Direction::East => {
+                            if best_east > score {
+                                best_east = score;
+                                win.east = Some(other_windows.id)
+                            }
+                        }
                     }
                 }
-                Direction::West => {
-                    if best_west > score {
-                        best_west = score;
-                        win.west = Some(other_windows.id)
-                    }
-                }
-                Direction::South => {
-                    if best_south > score {
-                        best_south = score;
-                        win.south = Some(other_windows.id)
-                    }
-                }
-                Direction::East => {
-                    if best_east > score {
-                        best_east = score;
-                        win.east = Some(other_windows.id)
-                    }
-                }
-            }
+            });
         }
         store.insert(window.id, win);
     }

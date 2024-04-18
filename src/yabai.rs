@@ -48,31 +48,23 @@ pub struct YabaiWindowFrame {
 }
 
 impl YabaiWindowFrame {
-    pub fn direction(&self, frame: &YabaiWindowFrame) -> (usize, Direction) {
+    pub fn direction(&self, frame: &YabaiWindowFrame) -> [Option<(usize, Direction)>; 2] {
         let center = self.position() - frame.position();
-        if center.y == 0 {
-            if center.x > 0 {
-                (center.x.unsigned_abs(), Direction::West)
-            } else {
-                (center.x.unsigned_abs(), Direction::East)
-            }
-        } else if center.x == 0 {
-            if center.y > 0 {
-                (center.y.unsigned_abs(), Direction::South)
-            } else {
-                (center.y.unsigned_abs(), Direction::North)
-            }
-        } else if center.x.abs() > center.y.abs() {
-            if center.x > 0 {
-                (center.x.unsigned_abs(), Direction::East)
-            } else {
-                (center.x.unsigned_abs(), Direction::West)
-            }
-        } else if center.y > 0 {
-            (center.y.unsigned_abs(), Direction::South)
+        let x_direction = if center.x > 0 {
+            Some((center.abs() + center.x.unsigned_abs(), Direction::West))
+        } else if center.x < 0 {
+            Some((center.abs() + center.x.unsigned_abs(), Direction::East))
         } else {
-            (center.y.unsigned_abs(), Direction::North)
-        }
+            None
+        };
+        let y_direction = if center.y > 0 {
+            Some((center.abs() + center.y.unsigned_abs(), Direction::North))
+        } else if center.y < 0 {
+            Some((center.abs() + center.y.unsigned_abs(), Direction::South))
+        } else {
+            None
+        };
+        [x_direction, y_direction]
     }
 
     pub fn position(&self) -> Positon {
