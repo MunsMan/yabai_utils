@@ -1,11 +1,13 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::f64::consts::PI;
 use std::ops::Sub;
 
 use crate::yabai::YabaiWindowObject;
 
 pub type WindowId = usize;
 
-#[derive(clap::ValueEnum, Clone)]
+#[derive(clap::ValueEnum, Clone, Debug)]
 pub enum Direction {
     North,
     West,
@@ -14,8 +16,8 @@ pub enum Direction {
 }
 
 pub struct Positon {
-    pub x: isize,
-    pub y: isize,
+    pub x: f64,
+    pub y: f64,
 }
 
 impl Sub<Positon> for Positon {
@@ -31,10 +33,27 @@ impl Sub<Positon> for Positon {
 
 impl Positon {
     pub fn abs(&self) -> usize {
-        (self.x.pow(2) + self.y.pow(2)) as usize
+        (self.x.powi(2) + self.y.powi(2)).sqrt() as usize
+    }
+
+    pub fn direction(&self) -> f64 {
+        let rad = self.y.atan2(self.x);
+        if self.x >= 0.0 {
+            let degree = rad * 180.0 / PI;
+            if degree < 0.0 {
+                360.0 + degree
+            } else {
+                degree
+            }
+        } else if self.y >= 0.0 {
+            rad * 180.0 / PI
+        } else {
+            360.0 + rad * 180.0 / PI
+        }
     }
 }
 
+#[derive(Debug)]
 pub struct WindowNeighbours {
     pub north: Option<WindowId>,
     pub west: Option<WindowId>,
@@ -70,38 +89,54 @@ pub fn order_windows(windows: &[YabaiWindowObject]) -> HashMap<WindowId, WindowN
         let mut best_east = usize::MAX;
         let mut best_south = usize::MAX;
         let mut best_west = usize::MAX;
-        for other_windows in windows {
-            if window.id == other_windows.id {
+        for other_window in windows {
+            if window.id == other_window.id {
                 continue;
             }
-            let directions = window.frame.direction(&other_windows.frame);
+            let directions = window.frame.direction(&other_window.frame);
             directions.into_iter().for_each(|direction| {
                 if let Some((score, direction)) = direction {
                     match direction {
                         Direction::North => {
-                            if best_north > score {
+                            if let Ordering::Greater = best_north.cmp(&score) {
                                 best_north = score;
-                                win.north = Some(other_windows.id)
+                                win.north = Some(other_window.id)
                             }
                         }
-                        Direction::West => {
-                            if best_west > score {
+                        Direction::West => match best_west.cmp(&score) {
+                            Ordering::Greater => {
                                 best_west = score;
-                                win.west = Some(other_windows.id)
+                                win.west = Some(other_window.id)
                             }
-                        }
+                            Ordering::Equal => todo!(),
+                            _ => {}
+                        },
                         Direction::South => {
                             if best_south > score {
                                 best_south = score;
-                                win.south = Some(other_windows.id)
+                                win.south = Some(other_window.id)
                             }
                         }
-                        Direction::East => {
-                            if best_east > score {
+                        Direction::East => match best_east.cmp(&score) {
+                            Ordering::Greater => {
                                 best_east = score;
-                                win.east = Some(other_windows.id)
+                                win.east = Some(other_window.id)
                             }
-                        }
+                            Ordering::Equal => {
+                                if let Some(current_best_window_id) = win.east {
+                                    let current_best_window = windows
+                                        .iter()
+                                        .find(|x| x.id == current_best_window_id)
+                                        .unwrap();
+                                    if current_best_window.frame.y > other_window.frame.y {
+                                        win.east = Some(other_window.id)
+                                    }
+                                } else {
+                                    win.east = Some(other_window.id)
+                                }
+                            }
+                            _ => {}
+                        },
                     }
                 }
             });
@@ -113,4 +148,20 @@ pub fn order_windows(windows: &[YabaiWindowObject]) -> HashMap<WindowId, WindowN
 
 pub fn current_window(windows: &[YabaiWindowObject]) -> Option<&YabaiWindowObject> {
     windows.iter().find(|x| x.has_focus)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_position_direction() {
+        for i in 0..360 {
+            let x = (i as f64 * PI / 180.0).cos();
+            let y = (i as f64 * PI / 180.0).sin();
+            let position = Positon { x, y };
+            println!("{i}- ({},{}) {}", x, y, position.direction());
+            assert!((position.direction() - i as f64).abs() <= 1.0);
+        }
+    }
 }
