@@ -2,7 +2,7 @@ use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
-use crate::windows::{Direction, Positon, WindowId};
+use crate::windows::WindowId;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "kebab-case")]
@@ -41,62 +41,10 @@ pub struct YabaiWindowObject {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct YabaiWindowFrame {
-    x: f64,
+    pub x: f64,
     pub y: f64,
-    w: f64,
-    h: f64,
-}
-
-impl YabaiWindowFrame {
-    pub fn direction(&self, frame: &YabaiWindowFrame) -> [Option<(usize, Direction)>; 2] {
-        let center = frame.position() - self.position();
-        let distance = center.abs();
-        let direction = center.direction();
-        if !(35.0..=325.0).contains(&direction) {
-            return [Some((distance, Direction::East)), None];
-        }
-        if (35.0..65.0).contains(&direction) {
-            return [
-                Some((distance, Direction::East)),
-                Some((distance, Direction::South)),
-            ];
-        }
-        if (65.0..125.0).contains(&direction) {
-            return [Some((distance, Direction::South)), None];
-        }
-        if (125.0..145.0).contains(&direction) {
-            return [
-                Some((distance, Direction::South)),
-                Some((distance, Direction::West)),
-            ];
-        }
-        if (145.0..215.0).contains(&direction) {
-            return [Some((distance, Direction::West)), None];
-        }
-        if (215.0..235.0).contains(&direction) {
-            return [
-                Some((distance, Direction::West)),
-                Some((distance, Direction::North)),
-            ];
-        }
-        if (235.0..305.0).contains(&direction) {
-            return [Some((distance, Direction::North)), None];
-        }
-        if (305.0..325.0).contains(&direction) {
-            return [
-                Some((distance, Direction::North)),
-                Some((distance, Direction::East)),
-            ];
-        }
-        [None, None]
-    }
-
-    pub fn position(&self) -> Positon {
-        Positon {
-            x: self.x + (self.w / 2.0),
-            y: self.y + (self.h / 2.0),
-        }
-    }
+    pub w: f64,
+    pub h: f64,
 }
 
 pub fn query_windows() -> Vec<YabaiWindowObject> {
