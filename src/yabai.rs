@@ -2,7 +2,36 @@ use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
+use crate::spaces::SpaceIndex;
 use crate::windows::WindowId;
+
+#[derive(Serialize, Deserialize, Debug)]
+enum SpaceType {
+    #[serde(rename = "managed")]
+    Managed,
+    #[serde(rename = "bsp")]
+    Bsp,
+    #[serde(rename = "float")]
+    Float,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case")]
+pub struct YabaiSpaceObject {
+    id: u32,
+    uuid: String,
+    pub index: SpaceIndex,
+    label: String,
+    #[serde(rename = "type")]
+    space_type: SpaceType,
+    display: u32,
+    windows: Vec<WindowId>,
+    first_window: WindowId,
+    last_window: WindowId,
+    pub has_focus: bool,
+    is_visible: bool,
+    is_native_fullscreen: bool,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "kebab-case")]
@@ -48,18 +77,57 @@ pub struct YabaiWindowFrame {
 }
 
 pub fn query_windows() -> Vec<YabaiWindowObject> {
-    let result = Command::new("yabai")
-        .args(["-m", "query", "--windows", "--space"])
-        .output()
-        .expect("failed to execute process")
-        .stdout;
-    let mut windows: Vec<YabaiWindowObject> = serde_json::from_slice(&result).unwrap();
+    let mut windows = query_yabai::<YabaiWindowObject>("query --windows --space").unwrap();
     windows.retain(|x| x.is_visible && !x.is_hidden);
     windows
 }
 
+pub fn query_spaces() -> Vec<YabaiSpaceObject> {
+    query_yabai("query --spaces").unwrap()
+}
+
+#[derive(Debug)]
+pub enum YabaiQueryError {
+    CommandExecutionError,
+    ResponseParsingError,
+}
+
+fn query_yabai<T>(message: &str) -> Result<Vec<T>, YabaiQueryError>
+where
+    T: for<'a> Deserialize<'a>,
+{
+    let mut args = Vec::new();
+    args.push("-m");
+    args.append(&mut Iterator::collect(message.split_whitespace()));
+    let result = match Command::new("yabai").args(args).output() {
+        Ok(stream) => stream.stdout,
+        Err(_) => return Err(YabaiQueryError::CommandExecutionError),
+    };
+
+    match serde_json::from_slice(&result) {
+        Ok(result) => Ok(result),
+        Err(e) => {
+            dbg!(e);
+            Err(YabaiQueryError::ResponseParsingError)
+        }
+    }
+}
+
+fn send_yabai(message: &str) {
+    let mut args = Vec::new();
+    args.push("-m");
+    args.append(&mut Iterator::collect(message.split_whitespace()));
+    let _ = Command::new("yabai").args(args).output();
+}
+
 pub fn focus_window(window_id: WindowId) {
-    let _ = Command::new("yabai")
-        .args(["-m", "window", "--focus", &window_id.to_string()])
-        .spawn();
+    send_yabai(format!("window --focus {}", &window_id).as_str());
+}
+
+pub fn yabai_focus_space(space_index: SpaceIndex) {
+    send_yabai(format!("space --focus {}", &space_index).as_str());
+}
+
+pub fn yabai_create_space() {
+    send_yabai("space  --create");
 }
