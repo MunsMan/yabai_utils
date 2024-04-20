@@ -1,5 +1,5 @@
 use crate::clap::DirectionOrIndex;
-use crate::yabai::{query_spaces, yabai_create_space, yabai_focus_space};
+use crate::yabai::{query_spaces, yabai_create_space, yabai_delete_space, yabai_focus_space};
 
 pub type SpaceIndex = u8;
 
@@ -33,5 +33,14 @@ pub fn focus_space(direction_or_index: &DirectionOrIndex) {
                 yabai_focus_space(*index)
             }
         }
+    }
+}
+
+pub fn destroy_all_empty() {
+    let mut spaces_infos = query_spaces();
+    spaces_infos.retain(|x| x.windows.is_empty());
+    spaces_infos.sort_by(|a, b| a.index.partial_cmp(&b.index).unwrap());
+    for space in spaces_infos.iter().rev() {
+        yabai_delete_space(space.index);
     }
 }

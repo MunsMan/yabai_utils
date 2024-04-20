@@ -25,7 +25,7 @@ pub struct YabaiSpaceObject {
     #[serde(rename = "type")]
     space_type: SpaceType,
     display: u32,
-    windows: Vec<WindowId>,
+    pub windows: Vec<WindowId>,
     first_window: WindowId,
     last_window: WindowId,
     pub has_focus: bool,
@@ -126,6 +126,10 @@ pub fn focus_window(window_id: WindowId) {
 
 pub fn yabai_focus_space(space_index: SpaceIndex) {
     send_yabai(format!("space --focus {}", &space_index).as_str());
+}
+
+pub fn yabai_delete_space(space_index: SpaceIndex) {
+    send_yabai(format!("space {} --destroy", &space_index).as_str());
 }
 
 pub fn yabai_create_space() {

@@ -21,12 +21,13 @@ pub enum Commands {
 #[derive(Args)]
 pub struct SpaceArgs {
     #[command(subcommand)]
-    pub command: Option<SpaceCommand>,
+    pub command: SpaceCommand,
 }
 
 #[derive(Subcommand)]
 pub enum SpaceCommand {
     Focus(SpaceDirectionArgs),
+    DestroyAllEmpty,
 }
 
 #[derive(Args)]

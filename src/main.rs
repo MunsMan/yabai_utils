@@ -5,7 +5,7 @@ use crate::windows::{current_window, order_windows};
 use crate::yabai::{focus_window, query_windows};
 
 use self::clap::{SpaceCommand, WindowCommand};
-use self::spaces::focus_space;
+use self::spaces::{destroy_all_empty, focus_space};
 
 mod clap;
 mod spaces;
@@ -28,8 +28,8 @@ fn main() {
             None => todo!(),
         },
         Some(Commands::Space(arg)) => match &arg.command {
-            Some(SpaceCommand::Focus(arg)) => focus_space(&arg.direction_or_index),
-            None => todo!(),
+            SpaceCommand::Focus(arg) => focus_space(&arg.direction_or_index),
+            SpaceCommand::DestroyAllEmpty => destroy_all_empty(),
         },
         None => todo!(),
     }
