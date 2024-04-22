@@ -1,6 +1,6 @@
 # Yabai Utils
 
-**Yabai Utils** is a tool designed to streamline and simplify interactions with the Yabai window manager. It provides a set of utilities that abstract complex command invocations into simpler, more manageable functions. The primary goal of this project is to enhance productivity by reducing the complexity involved in managing window configurations and navigations.
+**Yabai Utils** is a tool designed to streamline and simplify interactions with the Yabai window manager. It provides a set of utilities that abstract complex command invocations into simpler, more manageable functions. The primary goal of this project is to enhance productivity by reducing the complexity involved in managing window configurations and navigation.
 
 ## Motivation
 
@@ -13,6 +13,9 @@ Currently, **Yabai Utils** focuses on enhancing window navigation, including sup
 ### Current Capabilities:
 
 - **Window Focusing**: Simplify the focusing of windows, including floating ones, with easy-to-use commands.
+- Space Focusing: Focus on any space by passing a direction (`left`, `right`) or just an index.
+  - When using directions, cycling is through all spaces is the default behavior
+  - When using indexes, you always go to your desired space. If it doesn't exist, yabai-utils will create it for you.
 
 ## Getting Started
 
