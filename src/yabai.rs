@@ -3,7 +3,7 @@ use std::process::Command;
 use serde::{Deserialize, Serialize};
 
 use crate::spaces::SpaceIndex;
-use crate::windows::WindowId;
+use crate::windows::{Direction, WindowId};
 
 #[derive(Serialize, Deserialize, Debug)]
 enum SpaceType {
@@ -134,4 +134,14 @@ pub fn yabai_delete_space(space_index: SpaceIndex) {
 
 pub fn yabai_create_space() {
     send_yabai("space  --create");
+}
+
+pub fn yabai_resize_window(direction: Direction, offset: i32) {
+    let (corner, offset) = match direction {
+        Direction::Up => ("top_right", format!("0:{}", offset)),
+        Direction::Left => ("top_left", format!("{}:0", offset)),
+        Direction::Down => ("bottom_right", format!("0:{}", offset)),
+        Direction::Right => ("bottom_right", format!("{}:0", offset)),
+    };
+    send_yabai(format!("window --resize {}:{}", corner, offset).as_str());
 }

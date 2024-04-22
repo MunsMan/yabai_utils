@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::ops::Sub;
 
-use crate::yabai::YabaiWindowObject;
+use crate::yabai::{yabai_resize_window, YabaiWindowObject};
 
 pub type WindowId = usize;
 
@@ -120,4 +120,8 @@ pub fn order_windows(windows: &[YabaiWindowObject]) -> HashMap<WindowId, WindowN
 
 pub fn current_window(windows: &[YabaiWindowObject]) -> Option<&YabaiWindowObject> {
     windows.iter().find(|x| x.has_focus)
+}
+
+pub fn resize_window(direction: Direction, offset: i32) {
+    yabai_resize_window(direction, offset);
 }

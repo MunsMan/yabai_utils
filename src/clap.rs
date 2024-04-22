@@ -79,9 +79,23 @@ pub struct WindowArgs {
 #[derive(Subcommand)]
 pub enum WindowCommand {
     Focus(WindowDirectionArgs),
+    Resize(WindowResizeDirectionArgs),
 }
 
 #[derive(clap::Args)]
 pub struct WindowDirectionArgs {
     pub direction: Direction,
+}
+
+#[derive(clap::Args)]
+#[group(required = true)]
+pub struct WindowResizeDirectionArgs {
+    #[arg(short, long)]
+    pub left: Option<i32>,
+    #[arg(short, long)]
+    pub right: Option<i32>,
+    #[arg(short, long)]
+    pub up: Option<i32>,
+    #[arg(short, long)]
+    pub down: Option<i32>,
 }
