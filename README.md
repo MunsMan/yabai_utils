@@ -13,7 +13,7 @@ Currently, **Yabai Utils** focuses on enhancing window navigation, including sup
 ### Current Capabilities:
 
 - **Window Focusing**: Simplify the focusing of windows, including floating ones, with easy-to-use commands.
-- Space Focusing: Focus on any space by passing a direction (`left`, `right`) or just an index.
+- **Space Focusing**: Focus on any space by passing a direction (`left`, `right`) or just an index.
   - When using directions, cycling is through all spaces is the default behavior
   - When using indexes, you always go to your desired space. If it doesn't exist, yabai-utils will create it for you.
 
@@ -58,7 +58,7 @@ To use the simplified window navigation commands, run:
 yabai-utils window focus <direction>
 ```
 
-direction = `north`, `east`, `south`, `west`
+direction = `up`, `down`, `left`, `right`
 
 ## Roadmap
 
