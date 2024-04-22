@@ -8,12 +8,14 @@ use crate::windows::Direction;
 #[command(version, about, long_about=None)]
 pub struct Cli {
     #[command(subcommand)]
-    pub command: Option<Commands>,
+    pub command: Commands,
 }
 
 #[derive(Subcommand)]
 pub enum Commands {
+    /// Handle Windows
     Window(WindowArgs),
+    /// Handle Spaces
     Space(SpaceArgs),
     // Display,
 }
@@ -26,20 +28,29 @@ pub struct SpaceArgs {
 
 #[derive(Subcommand)]
 pub enum SpaceCommand {
+    /// Command to manage the Spaces focus
+    /// Allows for cycling through spaces with directions
+    /// or direct access by providing an index.
+    /// When a space with the provided index doesn't exist, yabai-utils creates it for you
     Focus(SpaceDirectionArgs),
+    /// Destroying empty spaces
     DestroyAllEmpty,
 }
 
 #[derive(Args)]
 #[group(required = true, multiple = false)]
 pub struct SpaceDirectionArgs {
+    /// Provide a direction <left, right> or an index <number>
     pub direction_or_index: DirectionOrIndex,
 }
 
 #[derive(Debug, Clone)]
 pub enum DirectionOrIndex {
+    /// Selecting the space to the Left
     Left,
+    /// Selecting the space to the Right
     Right,
+    /// Going to space with <index>
     Index(u8),
 }
 
@@ -62,7 +73,7 @@ impl FromStr for DirectionOrIndex {
 #[derive(Args)]
 pub struct WindowArgs {
     #[command(subcommand)]
-    pub command: Option<WindowCommand>,
+    pub command: WindowCommand,
 }
 
 #[derive(Subcommand)]
