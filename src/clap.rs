@@ -3,6 +3,7 @@ use std::str::FromStr;
 use clap::{Args, Parser, Subcommand};
 
 use crate::windows::Direction;
+use crate::yabai::YabaiSignalEvent;
 
 #[derive(Parser)]
 #[command(version, about, long_about=None)]
@@ -17,7 +18,25 @@ pub enum Commands {
     Window(WindowArgs),
     /// Handle Spaces
     Space(SpaceArgs),
-    // Display,
+    /// Signals,
+    Signal(SignalArgs),
+}
+#[derive(Args)]
+pub struct SignalArgs {
+    #[command(subcommand)]
+    pub command: SignalCommand,
+}
+
+#[derive(Subcommand)]
+pub enum SignalCommand {
+    Load,
+    Unload,
+    SignalEvent(SignalEventArg),
+}
+
+#[derive(Args)]
+pub struct SignalEventArg {
+    pub event: YabaiSignalEvent,
 }
 
 #[derive(Args)]
@@ -80,6 +99,7 @@ pub struct WindowArgs {
 pub enum WindowCommand {
     Focus(WindowDirectionArgs),
     Resize(WindowResizeDirectionArgs),
+    AutoFocus,
 }
 
 #[derive(clap::Args)]
