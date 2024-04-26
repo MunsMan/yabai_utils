@@ -263,7 +263,7 @@ pub fn yabai_add_event(event: YabaiSignalEvent) {
                 "action=yabai_utils signal-event {}",
                 event.to_string().replace('_', "-")
             ),
-            &format!("label={}", YABAI_UTILS_LABEL),
+            &format!("label={}-{}", YABAI_UTILS_LABEL, event),
         ])
         .output();
 }
@@ -276,7 +276,7 @@ fn query_signal_events() -> Vec<YabaiSignal> {
 pub fn yabai_remove_event(event: &YabaiSignalEvent) {
     let query = query_signal_events();
     for signal in query {
-        if signal.label == YABAI_UTILS_LABEL && signal.event == *event {
+        if signal.label.starts_with(YABAI_UTILS_LABEL) && signal.event == *event {
             let _ = send_yabai(&format!("signal --remove {}", signal.index));
         }
     }
