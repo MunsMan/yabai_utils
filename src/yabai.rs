@@ -137,10 +137,7 @@ where
 
     match serde_json::from_slice(&result) {
         Ok(result) => Ok(result),
-        Err(e) => {
-            dbg!(e);
-            Err(YabaiQueryError::ResponseParsingError)
-        }
+        Err(_) => Err(YabaiQueryError::ResponseParsingError),
     }
 }
 
@@ -148,7 +145,6 @@ fn send_yabai(message: &str) -> Result<Output, std::io::Error> {
     let mut args = Vec::new();
     args.push("-m");
     args.append(&mut Iterator::collect(message.split_whitespace()));
-    dbg!(&args);
     let output = Command::new("yabai").args(args).output()?;
     Ok(output)
 }
