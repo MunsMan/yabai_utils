@@ -38,8 +38,12 @@ pub fn focus_space(direction_or_index: &DirectionOrIndex) {
 
 pub fn destroy_all_empty() {
     let mut spaces_infos = query_spaces();
+    let num_spaces = spaces_infos.len();
     spaces_infos.retain(|x| x.windows.is_empty());
     spaces_infos.sort_by(|a, b| a.index.partial_cmp(&b.index).unwrap());
+    if num_spaces == spaces_infos.len() {
+        spaces_infos.pop();
+    }
     for space in spaces_infos.iter().rev() {
         yabai_delete_space(space.index);
     }

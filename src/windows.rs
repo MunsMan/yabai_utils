@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::ops::Sub;
 
-use crate::yabai::{yabai_resize_window, YabaiWindowObject};
+use crate::yabai::{focus_window, query_windows, yabai_resize_window, YabaiWindowObject};
 
 pub type WindowId = usize;
 
@@ -118,10 +118,26 @@ pub fn order_windows(windows: &[YabaiWindowObject]) -> HashMap<WindowId, WindowN
     result
 }
 
-pub fn current_window(windows: &[YabaiWindowObject]) -> Option<&YabaiWindowObject> {
+pub fn focused_window(windows: &[YabaiWindowObject]) -> Option<&YabaiWindowObject> {
     windows.iter().find(|x| x.has_focus)
 }
 
 pub fn resize_window(direction: Direction, offset: i32) {
     yabai_resize_window(direction, offset);
+}
+
+pub fn auto_focus() {
+    let windows = query_windows();
+    if focused_window(&windows).is_none() {
+        let next_window = windows.iter().reduce(|largest, window| {
+            if largest.frame < window.frame {
+                window
+            } else {
+                largest
+            }
+        });
+        if let Some(next_window) = next_window {
+            focus_window(next_window.id);
+        }
+    }
 }
