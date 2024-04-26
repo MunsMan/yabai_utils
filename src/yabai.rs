@@ -260,7 +260,7 @@ pub fn yabai_add_event(event: YabaiSignalEvent) {
             "--add",
             &format!("event={}", event),
             &format!(
-                "action=yabai_utils signal-event {}",
+                "action=yabai_utils signal event {}",
                 event.to_string().replace('_', "-")
             ),
             &format!("label={}-{}", YABAI_UTILS_LABEL, event),
