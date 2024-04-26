@@ -1,7 +1,11 @@
 use std::collections::HashMap;
 use std::ops::Sub;
 
-use crate::yabai::{focus_window, query_windows, yabai_resize_window, YabaiWindowObject};
+use crate::clap::DirectionOrIndex;
+use crate::yabai::{
+    focus_window, query_spaces, query_windows, yabai_create_space, yabai_focus_space,
+    yabai_move_window_space, yabai_resize_window, YabaiWindowObject,
+};
 
 pub type WindowId = usize;
 
@@ -139,5 +143,48 @@ pub fn auto_focus() {
         if let Some(next_window) = next_window {
             focus_window(next_window.id);
         }
+    }
+}
+
+pub fn move_window_to_space(direction_or_index: &DirectionOrIndex, follow_focus: bool) {
+    let spaces_infos = query_spaces();
+    let windows = query_windows();
+    let focused_window = focused_window(&windows);
+    if focused_window.is_none() {
+        return;
+    }
+    let num_spaces = spaces_infos.len() as u8;
+    let index = match direction_or_index {
+        DirectionOrIndex::Left => {
+            let current_space = spaces_infos.iter().find(|x| x.has_focus).unwrap();
+            if current_space.index > 2 {
+                current_space.index - 1
+            } else {
+                num_spaces
+            }
+        }
+        DirectionOrIndex::Right => {
+            let current_space = spaces_infos.iter().find(|x| x.has_focus).unwrap();
+            if current_space.index == num_spaces {
+                1
+            } else {
+                current_space.index + 1
+            }
+        }
+        DirectionOrIndex::Index(index) => {
+            if index <= &num_spaces {
+                *index
+            } else {
+                for _ in num_spaces..*index {
+                    yabai_create_space()
+                }
+                *index
+            }
+        }
+    };
+    yabai_move_window_space(index);
+    if follow_focus {
+        yabai_focus_space(index);
+        focus_window(focused_window.unwrap().id);
     }
 }

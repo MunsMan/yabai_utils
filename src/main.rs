@@ -7,7 +7,7 @@ use crate::yabai::{focus_window, query_windows};
 use self::clap::{SignalCommand, SpaceCommand, WindowCommand, WindowResizeDirectionArgs};
 use self::signal::{load_signal, signal_event_handler, unload_signal};
 use self::spaces::{destroy_all_empty, focus_space};
-use self::windows::auto_focus;
+use self::windows::{auto_focus, move_window_to_space};
 
 mod clap;
 mod signal;
@@ -47,6 +47,7 @@ fn main() {
                     resize_window(Direction::Down, *down)
                 }
             }
+            WindowCommand::Move(arg) => move_window_to_space(&arg.direction_or_index, true),
             WindowCommand::AutoFocus => auto_focus(),
         },
         Commands::Space(arg) => match &arg.command {

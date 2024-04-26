@@ -161,6 +161,10 @@ pub fn yabai_focus_space(space_index: SpaceIndex) {
     let _ = send_yabai(format!("space --focus {}", &space_index).as_str());
 }
 
+pub fn yabai_move_window_space(space_index: SpaceIndex) {
+    let _ = send_yabai(format!("window --space {}", &space_index).as_str());
+}
+
 pub fn yabai_delete_space(space_index: SpaceIndex) {
     let _ = send_yabai(format!("space {} --destroy", &space_index).as_str());
 }

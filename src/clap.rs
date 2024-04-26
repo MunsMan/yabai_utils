@@ -99,6 +99,7 @@ pub struct WindowArgs {
 pub enum WindowCommand {
     Focus(WindowDirectionArgs),
     Resize(WindowResizeDirectionArgs),
+    Move(SpaceDirectionArgs),
     AutoFocus,
 }
 
