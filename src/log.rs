@@ -7,7 +7,7 @@ const LOG_FILENAME: &str = "yabai-utils.log";
 
 fn load_file() -> File {
     let filepath = temp_dir().join(Path::new(LOG_FILENAME));
-    File::create(filepath).unwrap()
+    File::options().append(true).open(filepath).unwrap()
 }
 
 pub fn log(msg: String) {
