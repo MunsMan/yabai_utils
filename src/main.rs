@@ -57,7 +57,7 @@ fn main() {
         Commands::Signal(arg) => match &arg.command {
             SignalCommand::Load => load_signal(),
             SignalCommand::Unload => unload_signal(),
-            SignalCommand::SignalEvent(signal) => signal_event_handler(&signal.event),
+            SignalCommand::Event(signal) => signal_event_handler(&signal.event),
         },
     }
 }

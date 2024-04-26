@@ -3,7 +3,6 @@ use std::str::FromStr;
 use clap::{Args, Parser, Subcommand};
 
 use crate::windows::Direction;
-use crate::yabai::YabaiSignalEvent;
 
 #[derive(Parser)]
 #[command(version, about, long_about=None)]
@@ -31,12 +30,13 @@ pub struct SignalArgs {
 pub enum SignalCommand {
     Load,
     Unload,
-    SignalEvent(SignalEventArg),
+    Event(SignalEventArg),
 }
 
 #[derive(Args)]
 pub struct SignalEventArg {
-    pub event: YabaiSignalEvent,
+    #[command(subcommand)]
+    pub event: SignalEvent,
 }
 
 #[derive(Args)]
@@ -119,4 +119,95 @@ pub struct WindowResizeDirectionArgs {
     pub up: Option<i32>,
     #[arg(short, long)]
     pub down: Option<i32>,
+}
+
+type ProcessId = u32;
+type WindowId = u32;
+type SpaceId = u32;
+type DisplayId = u32;
+type SpaceIndex = u32;
+type DisplayIndex = u32;
+
+#[derive(Args)]
+pub struct YabaiWindowId {
+    pub window_id: WindowId,
+}
+#[derive(Args)]
+pub struct YabaiProcessId {
+    pub process_id: ProcessId,
+}
+#[derive(Args)]
+pub struct YabaiProcess {
+    pub process_id: ProcessId,
+    pub recent_process_id: ProcessId,
+}
+#[derive(Args)]
+pub struct YabaiSpaceId {
+    pub space_id: SpaceId,
+}
+#[derive(Args)]
+pub struct YabaiSpace {
+    pub space_id: SpaceId,
+    pub space_index: SpaceIndex,
+}
+#[derive(Args)]
+pub struct YabaiSpaceChange {
+    pub space_id: SpaceId,
+    pub space_index: SpaceIndex,
+    pub recent_space_id: SpaceId,
+    pub recent_space_index: SpaceIndex,
+}
+#[derive(Args)]
+pub struct YabaiDisplayId {
+    pub display_id: DisplayId,
+}
+#[derive(Args)]
+pub struct YabaiDisplay {
+    pub display_id: DisplayId,
+    pub display_index: DisplayIndex,
+}
+#[derive(Args)]
+pub struct YabaiDisplayChange {
+    pub display_id: DisplayId,
+    pub display_index: DisplayIndex,
+    pub recent_display_id: DisplayId,
+    pub recent_display_index: DisplayIndex,
+}
+
+#[derive(Args)]
+pub struct YabaiMissionControlMode {
+    pub mode: u32,
+}
+
+#[derive(Subcommand)]
+pub enum SignalEvent {
+    ApplicationLaunched(YabaiProcessId),
+    ApplicationTerminated(YabaiProcessId),
+    ApplicationFrontSwitched(YabaiProcess),
+    ApplicationActivated(YabaiProcessId),
+    ApplicationDeactivated(YabaiProcessId),
+    ApplicationVisible(YabaiProcessId),
+    ApplicationHidden(YabaiProcessId),
+    WindowCreated(YabaiWindowId),
+    WindowDestroyed(YabaiWindowId),
+    WindowFocused(YabaiWindowId),
+    WindowMoved(YabaiWindowId),
+    WindowResized(YabaiWindowId),
+    WindowMinimized(YabaiWindowId),
+    WindowDeminimized(YabaiWindowId),
+    WindowTitleChanged(YabaiWindowId),
+    SpaceCreated(YabaiSpace),
+    SpaceDestroyed(YabaiSpaceId),
+    SpaceChanged(YabaiSpaceChange),
+    DisplayAdded(YabaiDisplay),
+    DisplayRemoved(YabaiDisplayId),
+    DisplayMoved(YabaiDisplay),
+    DisplayResized(YabaiDisplay),
+    DisplayChanged(YabaiDisplayChange),
+    MissionControlEnter(YabaiMissionControlMode),
+    MissionControlExit(YabaiMissionControlMode),
+    DockDidChangePref,
+    DockDidRestart,
+    MenuBarHiddenChanged,
+    SystemWoke,
 }

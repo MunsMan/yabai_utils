@@ -1,22 +1,26 @@
+use crate::clap::SignalEvent;
 use crate::spaces::destroy_all_empty;
 use crate::windows::auto_focus;
 use crate::yabai::{yabai_add_event, yabai_remove_event, YabaiSignalEvent};
 
-fn signals() -> [YabaiSignalEvent; 2] {
+fn signals() -> [YabaiSignalEvent; 4] {
     [
         YabaiSignalEvent::WindowMinimized,
         YabaiSignalEvent::WindowDestroyed,
+        YabaiSignalEvent::WindowMoved,
+        YabaiSignalEvent::WindowCreated,
     ]
 }
 
-pub fn signal_event_handler(event: &YabaiSignalEvent) {
+pub fn signal_event_handler(event: &SignalEvent) {
     match event {
-        YabaiSignalEvent::WindowMinimized => auto_focus(),
-        YabaiSignalEvent::WindowDestroyed => {
+        SignalEvent::WindowMinimized(_) => auto_focus(),
+        SignalEvent::WindowDestroyed(_) => {
             auto_focus();
             destroy_all_empty();
         }
-        YabaiSignalEvent::WindowMoved => destroy_all_empty(),
+        SignalEvent::WindowMoved(_) => destroy_all_empty(),
+        SignalEvent::WindowCreated(_) => {}
         _ => {}
     }
 }
