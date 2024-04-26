@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use clap::{Args, Parser, Subcommand};
 
-use crate::windows::Direction;
+use crate::windows::{Direction, WindowId};
 
 #[derive(Parser)]
 #[command(version, about, long_about=None)]
@@ -20,20 +20,20 @@ pub enum Commands {
     /// Signals,
     Signal(SignalArgs),
 }
-#[derive(Args)]
+#[derive(Args, Debug)]
 pub struct SignalArgs {
     #[command(subcommand)]
     pub command: SignalCommand,
 }
 
-#[derive(Subcommand)]
+#[derive(Subcommand, Debug)]
 pub enum SignalCommand {
     Load,
     Unload,
     Event(SignalEventArg),
 }
 
-#[derive(Args)]
+#[derive(Args, Debug)]
 pub struct SignalEventArg {
     #[command(subcommand)]
     pub event: SignalEvent,
@@ -122,51 +122,50 @@ pub struct WindowResizeDirectionArgs {
 }
 
 type ProcessId = u32;
-type WindowId = u32;
 type SpaceId = u32;
 type DisplayId = u32;
 type SpaceIndex = u32;
 type DisplayIndex = u32;
 
-#[derive(Args)]
+#[derive(Args, Debug)]
 pub struct YabaiWindowId {
     pub window_id: WindowId,
 }
-#[derive(Args)]
+#[derive(Args, Debug)]
 pub struct YabaiProcessId {
     pub process_id: ProcessId,
 }
-#[derive(Args)]
+#[derive(Args, Debug)]
 pub struct YabaiProcess {
     pub process_id: ProcessId,
     pub recent_process_id: ProcessId,
 }
-#[derive(Args)]
+#[derive(Args, Debug)]
 pub struct YabaiSpaceId {
     pub space_id: SpaceId,
 }
-#[derive(Args)]
+#[derive(Args, Debug)]
 pub struct YabaiSpace {
     pub space_id: SpaceId,
     pub space_index: SpaceIndex,
 }
-#[derive(Args)]
+#[derive(Args, Debug)]
 pub struct YabaiSpaceChange {
     pub space_id: SpaceId,
     pub space_index: SpaceIndex,
     pub recent_space_id: SpaceId,
     pub recent_space_index: SpaceIndex,
 }
-#[derive(Args)]
+#[derive(Args, Debug)]
 pub struct YabaiDisplayId {
     pub display_id: DisplayId,
 }
-#[derive(Args)]
+#[derive(Args, Debug)]
 pub struct YabaiDisplay {
     pub display_id: DisplayId,
     pub display_index: DisplayIndex,
 }
-#[derive(Args)]
+#[derive(Args, Debug)]
 pub struct YabaiDisplayChange {
     pub display_id: DisplayId,
     pub display_index: DisplayIndex,
@@ -174,12 +173,12 @@ pub struct YabaiDisplayChange {
     pub recent_display_index: DisplayIndex,
 }
 
-#[derive(Args)]
+#[derive(Args, Debug)]
 pub struct YabaiMissionControlMode {
     pub mode: u32,
 }
 
-#[derive(Subcommand)]
+#[derive(Subcommand, Debug)]
 pub enum SignalEvent {
     ApplicationLaunched(YabaiProcessId),
     ApplicationTerminated(YabaiProcessId),

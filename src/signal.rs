@@ -1,7 +1,7 @@
-use crate::clap::SignalEvent;
+use crate::clap::{SignalEvent, YabaiWindowId};
 use crate::spaces::destroy_all_empty;
 use crate::windows::auto_focus;
-use crate::yabai::{yabai_add_event, yabai_remove_event, YabaiSignalEvent};
+use crate::yabai::{focus_window, yabai_add_event, yabai_remove_event, YabaiSignalEvent};
 
 fn signals() -> [YabaiSignalEvent; 4] {
     [
@@ -15,12 +15,17 @@ fn signals() -> [YabaiSignalEvent; 4] {
 pub fn signal_event_handler(event: &SignalEvent) {
     match event {
         SignalEvent::WindowMinimized(_) => auto_focus(),
+        SignalEvent::WindowDeminimized(YabaiWindowId { window_id }) => {
+            focus_window(*window_id);
+        }
         SignalEvent::WindowDestroyed(_) => {
             auto_focus();
             destroy_all_empty();
         }
         SignalEvent::WindowMoved(_) => destroy_all_empty(),
-        SignalEvent::WindowCreated(_) => {}
+        SignalEvent::WindowCreated(YabaiWindowId { window_id }) => {
+            focus_window(*window_id);
+        }
         _ => {}
     }
 }
