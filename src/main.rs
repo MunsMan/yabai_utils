@@ -5,18 +5,27 @@ use crate::windows::{focused_window, order_windows, resize_window, Direction};
 use crate::yabai::{focus_window, query_windows};
 
 use self::clap::{SignalCommand, SpaceCommand, WindowCommand, WindowResizeDirectionArgs};
+use self::log::log;
 use self::signal::{load_signal, signal_event_handler, unload_signal};
 use self::spaces::{destroy_all_empty, focus_space};
 use self::windows::{auto_focus, move_window_to_space};
 
 mod clap;
+mod log;
 mod signal;
 mod spaces;
 mod windows;
 mod yabai;
 
 fn main() {
-    let cli = Cli::parse();
+    let cli = Cli::try_parse();
+    let cli = match cli {
+        Ok(x) => x,
+        Err(e) => {
+            log(e.to_string());
+            return;
+        }
+    };
     match &cli.command {
         Commands::Window(x) => match &x.command {
             WindowCommand::Focus(WindowDirectionArgs { direction }) => {
@@ -54,10 +63,13 @@ fn main() {
             SpaceCommand::Focus(arg) => focus_space(&arg.direction_or_index),
             SpaceCommand::DestroyAllEmpty => destroy_all_empty(),
         },
-        Commands::Signal(arg) => match &arg.command {
-            SignalCommand::Load => load_signal(),
-            SignalCommand::Unload => unload_signal(),
-            SignalCommand::Event(signal) => signal_event_handler(&signal.event),
-        },
+        Commands::Signal(arg) => {
+            log(format!("Signal {:?}", arg.command));
+            match &arg.command {
+                SignalCommand::Load => load_signal(),
+                SignalCommand::Unload => unload_signal(),
+                SignalCommand::Event(signal) => signal_event_handler(&signal.event),
+            }
+        }
     }
 }
