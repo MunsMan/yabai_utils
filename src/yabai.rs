@@ -250,6 +250,46 @@ impl std::fmt::Display for YabaiSignalEvent {
     }
 }
 
+impl YabaiSignalEvent {
+    fn args(&self) -> Vec<&str> {
+        match self {
+            YabaiSignalEvent::ApplicationLaunched => vec!["$YABAI_PROCESS_ID"],
+            YabaiSignalEvent::ApplicationTerminated => vec!["$YABAI_PROCESS_ID"],
+            YabaiSignalEvent::ApplicationFrontSwitched => {
+                vec!["$YABAI_PROCESS_ID", "$YABAI_RECENT_PROCESS_ID"]
+            }
+            YabaiSignalEvent::ApplicationActivated => vec!["$YABAI_PROCESS_ID"],
+            YabaiSignalEvent::ApplicationDeactivated => vec!["$YABAI_PROCESS_ID"],
+            YabaiSignalEvent::ApplicationVisible => vec!["$YABAI_PROCESS_ID"],
+            YabaiSignalEvent::ApplicationHidden => vec!["$YABAI_PROCESS_ID"],
+            YabaiSignalEvent::WindowCreated => vec!["$YABAI_WINDOW_ID"],
+            YabaiSignalEvent::WindowDestroyed => vec!["$YABAI_WINDOW_ID"],
+            YabaiSignalEvent::WindowFocused => vec!["$YABAI_WINDOW_ID"],
+            YabaiSignalEvent::WindowMoved => vec!["$YABAI_WINDOW_ID"],
+            YabaiSignalEvent::WindowResized => vec!["$YABAI_WINDOW_ID"],
+            YabaiSignalEvent::WindowMinimized => vec!["$YABAI_WINDOW_ID"],
+            YabaiSignalEvent::WindowDeminimized => vec!["$YABAI_WINDOW_ID"],
+            YabaiSignalEvent::WindowTitleChanged => vec!["$YABAI_WINDOW_ID"],
+            YabaiSignalEvent::SpaceCreated => vec!["$YABAI_SPACE_ID", "$YABAI_SPACE_INDEX"],
+            YabaiSignalEvent::SpaceDestroyed => vec!["$YABAI_SPACE_ID"],
+            YabaiSignalEvent::SpaceChanged => vec![
+                "$YABAI_SPACE_ID",
+                "$YABAI_SPACE_INDEX",
+                "$YABAI_RECENT_SPACE_ID",
+                "$YABAI_RECENT_SPACE_INDEX",
+            ],
+            YabaiSignalEvent::DisplayAdded => vec!["$YABAI_DISPLAY_ID", "$YABAI_DISPLAY_INDEX"],
+            YabaiSignalEvent::DisplayRemoved => vec!["$YABAI_DISPLAY_ID"],
+            YabaiSignalEvent::DisplayMoved => vec!["$YABAI_DISPLAY_ID", "$YABAI_DISPLAY_INDEX"],
+            YabaiSignalEvent::DisplayResized => vec!["$YABAI_DISPLAY_ID", "$YABAI_DISPLAY_INDEX"],
+            YabaiSignalEvent::DisplayChanged => vec!["$YABAI_DISPLAY_ID", "$YABAI_DISPLAY_INDEX"],
+            YabaiSignalEvent::MissionControlEnter => vec!["YABAI_MISSION_CONTROL_MODE"],
+            YabaiSignalEvent::MissionControlExit => vec!["YABAI_MISSION_CONTROL_MODE"],
+            _ => vec![],
+        }
+    }
+}
+
 const YABAI_UTILS_LABEL: &str = "yabai-utils";
 
 pub fn yabai_add_event(event: YabaiSignalEvent) {
@@ -260,8 +300,9 @@ pub fn yabai_add_event(event: YabaiSignalEvent) {
             "--add",
             &format!("event={}", event),
             &format!(
-                "action=yabai_utils signal event {}",
-                event.to_string().replace('_', "-")
+                "action=yabai_utils signal event {} {}",
+                event.to_string().replace('_', "-"),
+                event.args().join(" ")
             ),
             &format!("label={}-{}", YABAI_UTILS_LABEL, event),
         ])
