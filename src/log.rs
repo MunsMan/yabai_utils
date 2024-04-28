@@ -5,12 +5,16 @@ use std::path::Path;
 
 const LOG_FILENAME: &str = "yabai-utils.log";
 
-fn load_file() -> File {
+fn load_file() -> Result<File, std::io::Error> {
     let filepath = temp_dir().join(Path::new(LOG_FILENAME));
-    File::options().append(true).open(filepath).unwrap()
+    let file = File::options().create(true).append(true).open(filepath)?;
+    Ok(file)
 }
 
 pub fn log(msg: String) {
     let file = load_file();
-    writeln!(&file, "{}", msg).unwrap();
+    match file {
+        Ok(file) => writeln!(&file, "{}", msg).unwrap(),
+        Err(e) => println!("{}", e),
+    }
 }
