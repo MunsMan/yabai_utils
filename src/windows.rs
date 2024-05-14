@@ -3,7 +3,7 @@ use std::ops::Sub;
 
 use crate::clap::DirectionOrIndex;
 use crate::yabai::{
-    focus_window, query_spaces, query_windows, yabai_create_space, yabai_focus_space,
+    query_spaces, query_windows, yabai_create_space, yabai_focus_space, yabai_focus_window,
     yabai_move_window_space, yabai_resize_window, YabaiWindowObject,
 };
 
@@ -131,7 +131,8 @@ pub fn resize_window(direction: Direction, offset: i32) {
 }
 
 pub fn auto_focus() {
-    let windows = query_windows();
+    let mut windows = query_windows();
+    windows.retain(|x| x.is_visible && !x.is_hidden);
     if focused_window(&windows).is_none() {
         let next_window = windows.iter().reduce(|largest, window| {
             if largest.frame < window.frame {
@@ -141,8 +142,20 @@ pub fn auto_focus() {
             }
         });
         if let Some(next_window) = next_window {
-            focus_window(next_window.id);
+            yabai_focus_window(next_window.id);
         }
+    }
+}
+
+pub fn focus_window_by_direction(direction: &Direction, ignore_sticky: bool) {
+    let mut windows = query_windows();
+    windows.retain(|x| x.is_visible && !x.is_hidden && (!x.is_sticky || ignore_sticky));
+    dbg!(&windows);
+    let current_window = focused_window(&windows).unwrap();
+    let store = order_windows(&windows);
+    let window = store.get(&current_window.id).unwrap();
+    if let Some(neighbour_id) = window.neigbour(direction) {
+        yabai_focus_window(neighbour_id)
     }
 }
 
@@ -185,6 +198,6 @@ pub fn move_window_to_space(direction_or_index: &DirectionOrIndex, follow_focus:
     yabai_move_window_space(index);
     if follow_focus {
         yabai_focus_space(index);
-        focus_window(focused_window.unwrap().id);
+        yabai_focus_window(focused_window.unwrap().id);
     }
 }

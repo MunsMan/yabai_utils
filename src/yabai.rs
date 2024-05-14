@@ -73,9 +73,9 @@ pub struct YabaiWindowObject {
     is_native_fullscreen: bool,
     pub is_visible: bool,
     pub is_minimized: bool,
-    is_hidden: bool,
-    is_floating: bool,
-    is_sticky: bool,
+    pub is_hidden: bool,
+    pub is_floating: bool,
+    pub is_sticky: bool,
     is_grabbed: bool,
 }
 
@@ -108,9 +108,7 @@ impl std::cmp::PartialOrd for YabaiWindowFrame {
 }
 
 pub fn query_windows() -> Vec<YabaiWindowObject> {
-    let mut windows = query_yabai::<YabaiWindowObject>("query --windows --space").unwrap();
-    windows.retain(|x| x.is_visible && !x.is_hidden);
-    windows
+    query_yabai::<YabaiWindowObject>("query --windows --space").unwrap()
 }
 
 pub fn query_spaces() -> Vec<YabaiSpaceObject> {
@@ -149,7 +147,7 @@ fn send_yabai(message: &str) -> Result<Output, std::io::Error> {
     Ok(output)
 }
 
-pub fn focus_window(window_id: WindowId) {
+pub fn yabai_focus_window(window_id: WindowId) {
     let _ = send_yabai(format!("window --focus {}", &window_id).as_str());
 }
 
