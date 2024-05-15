@@ -16,13 +16,14 @@ mod spaces;
 mod windows;
 mod yabai;
 
-fn main() {
+fn main() -> Result<(), ()> {
     let cli = Cli::try_parse();
     let cli = match cli {
         Ok(x) => x,
         Err(e) => {
             log(e.to_string());
-            return;
+            let _ = e.print();
+            return Err(());
         }
     };
     match &cli.command {
@@ -66,4 +67,5 @@ fn main() {
             }
         }
     }
+    Ok(())
 }
