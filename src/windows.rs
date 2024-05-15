@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::ops::Sub;
 
@@ -17,18 +18,38 @@ pub enum Direction {
     Right,
 }
 
-pub struct Positon {
+#[derive(Debug)]
+pub struct Position {
     pub x: f64,
     pub y: f64,
 }
 
-impl Sub<Positon> for Positon {
-    type Output = Positon;
+impl Sub<Position> for Position {
+    type Output = Position;
 
-    fn sub(self, positon: Positon) -> Self::Output {
-        Positon {
+    fn sub(self, positon: Position) -> Self::Output {
+        Position {
             x: self.x - positon.x,
             y: self.y - positon.y,
+        }
+    }
+}
+
+impl Position {
+    fn fuzz_cmp_x(&self, other: Position, fuzz: f64) -> Ordering {
+        let delta = other.x - self.x;
+        if delta < fuzz {
+            Ordering::Equal
+        } else {
+            self.x.total_cmp(&other.x)
+        }
+    }
+    fn fuzz_cmp_y(&self, other: Position, fuzz: f64) -> Ordering {
+        let delta = other.y - self.y;
+        if delta < fuzz {
+            Ordering::Equal
+        } else {
+            self.y.total_cmp(&other.y)
         }
     }
 }
@@ -52,6 +73,132 @@ impl WindowNeighbours {
     }
 }
 
+pub fn new_window_order(windows: &[YabaiWindowObject]) -> HashMap<WindowId, WindowNeighbours> {
+    let fuzz = 15.0;
+    let mut windows_hash = HashMap::new();
+
+    let mut left_right = Vec::new();
+    let mut up_down = Vec::new();
+    for window in windows {
+        windows_hash.insert(window.id, window);
+        left_right.push(window.id);
+        up_down.push(window.id);
+    }
+    let mut results = HashMap::new();
+    left_right.sort_by(|x, y| {
+        windows_hash
+            .get(x)
+            .unwrap()
+            .frame
+            .center()
+            .fuzz_cmp_x(windows_hash.get(y).unwrap().frame.center(), fuzz)
+    });
+    up_down.sort_by(|x, y| {
+        windows_hash
+            .get(x)
+            .unwrap()
+            .frame
+            .center()
+            .fuzz_cmp_y(windows_hash.get(y).unwrap().frame.center(), fuzz)
+    });
+    let up_down: Vec<Vec<usize>> = up_down[1..]
+        .iter()
+        .fold(vec![vec![up_down[0]]], |mut acc, e| {
+            let last_id = acc.last().unwrap().last().unwrap();
+            match windows_hash
+                .get(last_id)
+                .unwrap()
+                .frame
+                .center()
+                .fuzz_cmp_y(windows_hash.get(e).unwrap().frame.center(), fuzz)
+            {
+                Ordering::Equal => {
+                    let last = acc.last_mut().unwrap();
+                    last.push(*e);
+                }
+                _ => {
+                    acc.push(vec![*e]);
+                }
+            }
+            acc
+        })
+        .into_iter()
+        .map(|mut x| {
+            x.sort_by(|x, y| {
+                windows_hash
+                    .get(x)
+                    .unwrap()
+                    .frame
+                    .center()
+                    .fuzz_cmp_x(windows_hash.get(y).unwrap().frame.center(), fuzz)
+            });
+            x
+        })
+        .collect();
+    let left_right: Vec<Vec<usize>> = left_right[1..]
+        .iter()
+        .fold(vec![vec![left_right[0]]], |mut acc, e| {
+            let last_id = acc.last().unwrap().last().unwrap();
+            match windows_hash
+                .get(last_id)
+                .unwrap()
+                .frame
+                .center()
+                .fuzz_cmp_x(windows_hash.get(e).unwrap().frame.center(), fuzz)
+            {
+                Ordering::Equal => {
+                    let last = acc.last_mut().unwrap();
+                    last.push(*e);
+                }
+                _ => {
+                    acc.push(vec![*e]);
+                }
+            }
+            acc
+        })
+        .into_iter()
+        .map(|mut x| {
+            x.sort_by(|x, y| {
+                windows_hash
+                    .get(x)
+                    .unwrap()
+                    .frame
+                    .center()
+                    .fuzz_cmp_x(windows_hash.get(y).unwrap().frame.center(), fuzz)
+            });
+            x
+        })
+        .collect();
+    for window in windows {
+        results.insert(window.id, WindowNeighbours::default());
+    }
+    let mut prev = None;
+    let mut next;
+    for (i, windows) in up_down.iter().enumerate() {
+        next = up_down.get(i + 1).map(|x| *x.first().unwrap());
+        for window_id in windows {
+            results.entry(*window_id).and_modify(|x| {
+                x.up = prev;
+                x.down = next;
+            });
+        }
+        prev = Some(*windows.first().unwrap())
+    }
+    let mut prev = None;
+    for (i, windows) in left_right.iter().enumerate() {
+        next = left_right.get(i + 1).map(|x| *x.first().unwrap());
+        for window_id in windows {
+            results.entry(*window_id).and_modify(|x| {
+                x.left = prev;
+                x.right = next;
+            });
+        }
+        prev = Some(*windows.first().unwrap())
+    }
+    results
+}
+
+#[allow(dead_code)]
 pub fn order_windows(windows: &[YabaiWindowObject]) -> HashMap<WindowId, WindowNeighbours> {
     let mut result = HashMap::new();
     let mut windows_hash = HashMap::new();
@@ -150,9 +297,8 @@ pub fn auto_focus() {
 pub fn focus_window_by_direction(direction: &Direction, ignore_sticky: bool) {
     let mut windows = query_windows();
     windows.retain(|x| x.is_visible && !x.is_hidden && (!x.is_sticky || ignore_sticky));
-    dbg!(&windows);
     let current_window = focused_window(&windows).unwrap();
-    let store = order_windows(&windows);
+    let store = new_window_order(&windows);
     let window = store.get(&current_window.id).unwrap();
     if let Some(neighbour_id) = window.neigbour(direction) {
         yabai_focus_window(neighbour_id)

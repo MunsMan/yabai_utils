@@ -4,7 +4,7 @@ use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
 
 use crate::spaces::SpaceIndex;
-use crate::windows::{Direction, WindowId};
+use crate::windows::{Direction, Position, WindowId};
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "kebab-case")]
@@ -44,7 +44,7 @@ pub struct YabaiSpaceObject {
     is_native_fullscreen: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct YabaiWindowObject {
     pub id: usize,
@@ -55,7 +55,7 @@ pub struct YabaiWindowObject {
     root_window: bool,
     display: usize,
     space: usize,
-    level: usize,
+    pub level: usize,
     sub_level: isize,
     layer: String,
     sub_layer: String,
@@ -79,7 +79,7 @@ pub struct YabaiWindowObject {
     is_grabbed: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct YabaiWindowFrame {
     pub x: f64,
     pub y: f64,
@@ -90,6 +90,13 @@ pub struct YabaiWindowFrame {
 impl YabaiWindowFrame {
     pub fn size(&self) -> f64 {
         self.w * self.h
+    }
+
+    pub fn center(&self) -> Position {
+        Position {
+            x: self.x + (self.w / 2.0),
+            y: self.y + (self.h / 2.0),
+        }
     }
 }
 
