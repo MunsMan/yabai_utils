@@ -4,7 +4,7 @@ use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
 
 use crate::spaces::SpaceIndex;
-use crate::windows::{Direction, WindowId};
+use crate::windows::{Direction, Position, WindowId};
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "kebab-case")]
@@ -44,7 +44,7 @@ pub struct YabaiSpaceObject {
     is_native_fullscreen: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct YabaiWindowObject {
     pub id: usize,
@@ -55,7 +55,7 @@ pub struct YabaiWindowObject {
     root_window: bool,
     display: usize,
     space: usize,
-    level: usize,
+    pub level: usize,
     sub_level: isize,
     layer: String,
     sub_layer: String,
@@ -73,13 +73,13 @@ pub struct YabaiWindowObject {
     is_native_fullscreen: bool,
     pub is_visible: bool,
     pub is_minimized: bool,
-    is_hidden: bool,
-    is_floating: bool,
-    is_sticky: bool,
+    pub is_hidden: bool,
+    pub is_floating: bool,
+    pub is_sticky: bool,
     is_grabbed: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct YabaiWindowFrame {
     pub x: f64,
     pub y: f64,
@@ -90,6 +90,13 @@ pub struct YabaiWindowFrame {
 impl YabaiWindowFrame {
     pub fn size(&self) -> f64 {
         self.w * self.h
+    }
+
+    pub fn center(&self) -> Position {
+        Position {
+            x: self.x + (self.w / 2.0),
+            y: self.y + (self.h / 2.0),
+        }
     }
 }
 
@@ -108,9 +115,7 @@ impl std::cmp::PartialOrd for YabaiWindowFrame {
 }
 
 pub fn query_windows() -> Vec<YabaiWindowObject> {
-    let mut windows = query_yabai::<YabaiWindowObject>("query --windows --space").unwrap();
-    windows.retain(|x| x.is_visible && !x.is_hidden);
-    windows
+    query_yabai::<YabaiWindowObject>("query --windows --space").unwrap()
 }
 
 pub fn query_spaces() -> Vec<YabaiSpaceObject> {
@@ -149,7 +154,7 @@ fn send_yabai(message: &str) -> Result<Output, std::io::Error> {
     Ok(output)
 }
 
-pub fn focus_window(window_id: WindowId) {
+pub fn yabai_focus_window(window_id: WindowId) {
     let _ = send_yabai(format!("window --focus {}", &window_id).as_str());
 }
 

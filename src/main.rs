@@ -1,14 +1,13 @@
 use ::clap::Parser;
 
 use crate::clap::{Cli, Commands, WindowDirectionArgs};
-use crate::windows::{focused_window, order_windows, resize_window, Direction};
-use crate::yabai::{focus_window, query_windows};
+use crate::windows::{resize_window, Direction};
 
 use self::clap::{SignalCommand, SpaceCommand, WindowCommand, WindowResizeDirectionArgs};
 use self::log::log;
 use self::signal::{load_signal, signal_event_handler, unload_signal};
 use self::spaces::{destroy_all_empty, focus_space};
-use self::windows::{auto_focus, move_window_to_space};
+use self::windows::{auto_focus, focus_window_by_direction, move_window_to_space};
 
 mod clap;
 mod log;
@@ -17,26 +16,22 @@ mod spaces;
 mod windows;
 mod yabai;
 
-fn main() {
+fn main() -> Result<(), ()> {
     let cli = Cli::try_parse();
     let cli = match cli {
         Ok(x) => x,
         Err(e) => {
             log(e.to_string());
-            return;
+            let _ = e.print();
+            return Err(());
         }
     };
     match &cli.command {
         Commands::Window(x) => match &x.command {
-            WindowCommand::Focus(WindowDirectionArgs { direction }) => {
-                let windows = query_windows();
-                let current_window = focused_window(&windows).unwrap();
-                let store = order_windows(&windows);
-                let window = store.get(&current_window.id).unwrap();
-                if let Some(neighbour_id) = window.neigbour(direction) {
-                    focus_window(neighbour_id)
-                }
-            }
+            WindowCommand::Focus(WindowDirectionArgs {
+                direction,
+                ignore_sticky,
+            }) => focus_window_by_direction(direction, *ignore_sticky),
             WindowCommand::Resize(WindowResizeDirectionArgs {
                 left,
                 right,
@@ -72,4 +67,5 @@ fn main() {
             }
         }
     }
+    Ok(())
 }

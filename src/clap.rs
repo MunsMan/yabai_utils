@@ -106,6 +106,8 @@ pub enum WindowCommand {
 #[derive(clap::Args)]
 pub struct WindowDirectionArgs {
     pub direction: Direction,
+    #[arg(short, long, default_value_t = true)]
+    pub ignore_sticky: bool,
 }
 
 #[derive(clap::Args)]
